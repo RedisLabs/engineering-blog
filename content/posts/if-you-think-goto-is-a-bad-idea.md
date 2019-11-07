@@ -1,11 +1,11 @@
 ---
-title: "If You Think Goto Is a Bad Idea"
+title: "If you think goto is a bad idea, what would you say about longjmp?"
+
 date: 2019-11-07T17:46:51+02:00
 draft: true
 ---
 
-# If you think goto is a bad idea, what would you say about longjmp?
-
+![goto](/goto.png)
 
 I honestly disagree with the conventional wisdom of never using a `goto` in your code. There are several situations where I find it to be not just convenient, but good practice. the most common case is `goto cleanup`. Consider the following:
 
@@ -69,15 +69,34 @@ Instead of keeping tabs after which pointers need to be freed whenever a conditi
 
 Recently, we (the [RedisGraph](https://oss.redislabs.com/redisgraph/) team) wanted to introduce error reporting to handle failures while evaluating expressions. For example, evaluating the static expression `toUpper(5)` would fail as the `toUpper` function expects its argument to be a string. If this assumption isn't met, `toUpper` should raise an exception:
 
-<iframe src="https://medium.com/media/e1a7b4062927f76d1e797403ad922856" frameborder=0></iframe>
+```
+SIValue toUpper(SIValue v) {
+  SIType actual_type = SI_TYPE(v);
+  if(actual_type != SI_STRING) {
+    const char *actual_type_str = SIType_ToString(actual_type);
+    raise("Type mismatch: expected string but was %s", actual_type_str);
+  }
+}
+```
 
 Unfortunately, C doesn't come with a built-in exceptions mechanism like many other high-level languages do.
 
-<iframe src="https://medium.com/media/0ea4e27e47a23c849324f17ff684db35" frameborder=0></iframe>
+```
+if(cond) {
+	raise Exception("something went wrong")
+}
+```
 
 What we were after is a `try catch` logic:
 
-<iframe src="https://medium.com/media/50a574d0215fd8a67279d99f82a4b374" frameborder=0></iframe>
+```
+try {
+  // Perform work which might throw an exception
+  work();
+} catch (error *e) {
+  reportError(e);
+}
+```
 
 A nice thing about this design is that regardless of where an exception was thrown within the execution path taken by our call to work, the stack is automatically restored and we resume execution within the catch block.
 
@@ -108,17 +127,77 @@ We could have introduce a check for error within each function on our execution 
 
 And so `jump` is the first option which comes to mind, but note `jump` can only jump into a location within the function it is called in.
 
-<iframe src="https://medium.com/media/02bd00f143d56e761f67c08aebd432f6" frameborder=0></iframe>
+```
+function A() {
+	jump there;	// Can't jump outside of current scope.
+}
+
+function B() {
+there:
+	...
+}
+```
 
 Another idea we had was calling `ExecutionPlan_Execute` within a new thread, such that when an exception was thrown we would simply terminate the thread and resume execution within the "parent" thread. This approach would have save us the need to introduce extra logic or code branching:
 
-<iframe src="https://medium.com/media/cec5d101ad6bdfeedfa82acb6e2d05ce" frameborder=0></iframe>
+```
+function Query_Execute() {
+	/* Call ExecutionPlan_Execute on a different thread 
+	 * and wait for it to exit */
+	char *error = NULL;
+	pthread_t thread;
+	pthread_create(&thread, NULL, ExecutionPlan_Execute, NULL);
+	pthread_join(thread, &error);
+	
+	if(error != NULL) {
+		// Exception been thrown.
+		reportError(error);
+	}
+	...
+}
+```
 
 But this design would introduce an overhead of additional thread execution (even if we were to use a thread-pool), and we didn’t want to give up too much control to the OS scheduler.
 
 Ultimately, we found out about `longjmp`, which is similar to `jump` but not restricted in scope to the caller function. We can simply jump from anywhere to a preset point somewhere else in our call stack, and the best part is our stack would unwind to that point as if we've returned from each nested function. kinda going back in time if you will.
 
-<iframe src="https://medium.com/media/d33b98f38bdb100f6a91ac98840198c9" frameborder=0></iframe>
+```
+// ExecutionPlan.c
+function Query_Execute() {
+	/* Set an exception-handling breakpoint to capture run-time errors.
+	 * encountered_error will be set to 0 when setjmp is invoked, and will be nonzero if
+	 * a downstream exception returns us to this breakpoint. */
+	QueryCtx *ctx = pthread_getspecific(_tlsQueryCtxKey);
+	if(!ctx->breakpoint) ctx->breakpoint = rm_malloc(sizeof(jmp_buf));
+	int encountered_error = setjmp(*ctx->breakpoint);
+  
+	if(encountered_error) {
+		// Encountered a run-time error; return immediately.
+		reportError();
+		return;
+	}
+	
+	/* Start executing, if an exception is thrown somewhere down the road
+	 * we will resume execution at: if(encountered_error) above. */
+	ExecutionPlan_Execute();
+}
+
+/* ArithmeticExpression.c
+ * AR_EXP_Evaluate is called from various points in our code base 
+ * all originating from Query_Execute. */
+SIValue AR_EXP_Evaluate(AR_ExpNode *root, const Record r) {
+	SIValue result;
+	AR_EXP_Result res = _AR_EXP_Evaluate(root, r, &result);
+	if(res != EVAL_OK) {
+		/* An error was encountered during evaluation!
+		 * Exit this routine and return to the point on the stack where the handler was
+		 * instantiated. */
+		jmp_buf *env = _QueryCtx_GetExceptionHandler();
+		longjmp(*env, 1);
+	}
+	return result;
+}
+```
 
 This is the design we’ve introduced recently. In case you ever run a query in [RedisGraph](https://github.com/RedisGraph/RedisGraph) which violates the assumptions of a called function, this mechanism will be used to report an error back.
 
