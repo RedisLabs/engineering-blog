@@ -1,11 +1,69 @@
+---
+title: "If You Think Goto Is a Bad Idea"
+date: 2019-11-07T17:46:51+02:00
+draft: true
+---
+
 # If you think goto is a bad idea, what would you say about longjmp?
 
 
 I honestly disagree with the conventional wisdom of never using a `goto` in your code. There are several situations where I find it to be not just convenient, but good practice. the most common case is `goto cleanup`. Consider the following:
 
-<iframe src="https://medium.com/media/4ad142d0359de0417333be222261d25b" frameborder=0></iframe>
+Without `goto`:
 
-<iframe src="https://medium.com/media/224c5e983135c4735506719377086f49" frameborder=0></iframe>
+```
+void f(void) {
+	void *a = NULL;
+	void *b = NULL;
+	void *c = NULL;
+  
+	a = malloc(32);
+	//...
+	if(cond1) {
+		free(a)
+		return;
+	}
+  
+	b = malloc(64);
+	//...
+	if(cond2) {
+		free(a);
+		free(b);
+		return;
+	}
+  
+	c = malloc(128);  
+	//...
+	free(a);
+	free(b);
+	free(c);
+}
+```
+
+With `goto`:
+
+```
+void f(void) {
+  	void *a = NULL;
+	void *b = NULL;
+	void *c = NULL;
+
+	a = malloc(32);
+	//...
+	if(cond1) goto cleanup;
+
+	b = malloc(64);
+  	//...
+	if(cond2) goto cleanup;
+  
+	c = malloc(128);
+	//...
+cleanup:
+	if(a) free(a);
+	if(b) free(b);
+	if(c) free(c);
+}
+```
 
 Instead of keeping tabs after which pointers need to be freed whenever a condition is met, we simply jump, free whatever was allocated, and return. In my eyes this design is cleaner and less prone to error, but I can understand why others are against it.
 
