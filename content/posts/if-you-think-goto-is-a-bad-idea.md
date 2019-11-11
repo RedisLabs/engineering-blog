@@ -2,7 +2,7 @@
 title: "If you think goto is a bad idea, what would you say about longjmp?"
 
 date: 2019-11-07T17:46:51+02:00
-draft: true
+draft: false
 ---
 
 ![goto](/goto.png)
@@ -11,7 +11,7 @@ I honestly disagree with the conventional wisdom of never using a `goto` in your
 
 Without `goto`:
 
-```
+```c
 void f(void) {
 	void *a = NULL;
 	void *b = NULL;
@@ -42,7 +42,7 @@ void f(void) {
 
 With `goto`:
 
-```
+```c
 void f(void) {
   	void *a = NULL;
 	void *b = NULL;
@@ -69,7 +69,7 @@ Instead of keeping tabs after which pointers need to be freed whenever a conditi
 
 Recently, we (the [RedisGraph](https://oss.redislabs.com/redisgraph/) team) wanted to introduce error reporting to handle failures while evaluating expressions. For example, evaluating the static expression `toUpper(5)` would fail as the `toUpper` function expects its argument to be a string. If this assumption isn't met, `toUpper` should raise an exception:
 
-```
+```c
 SIValue toUpper(SIValue v) {
   SIType actual_type = SI_TYPE(v);
   if(actual_type != SI_STRING) {
@@ -81,7 +81,7 @@ SIValue toUpper(SIValue v) {
 
 Unfortunately, C doesn't come with a built-in exceptions mechanism like many other high-level languages do.
 
-```
+```c
 if(cond) {
 	raise Exception("something went wrong")
 }
@@ -89,7 +89,7 @@ if(cond) {
 
 What we were after is a `try catch` logic:
 
-```
+```c
 try {
   // Perform work which might throw an exception
   work();
@@ -102,7 +102,7 @@ A nice thing about this design is that regardless of where an exception was thro
 
 The function work in our case is replaced by a call to `ExecutionPlan_Execute`, which actually evaluates a query execution plan. From this point onwards we must be prepared to encounter exceptions, but the road which `ExecutionPlan_Execute` takes in unwinding and deep, consider the following call stack:
 
-```
+```plaintext
 redisgraph.so!QueryCtx_SetError (./src/query_ctx.c:78)
 redisgraph.so!_AR_EXP_ValidateInvocation (./src/arithmetic/arithmetic_expression.c:220)
 redisgraph.so!_AR_EXP_Evaluate (Unknown Source:0)
@@ -127,7 +127,7 @@ We could have introduce a check for error within each function on our execution 
 
 And so `jump` is the first option which comes to mind, but note `jump` can only jump into a location within the function it is called in.
 
-```
+```c
 function A() {
 	jump there;	// Can't jump outside of current scope.
 }
@@ -140,7 +140,7 @@ there:
 
 Another idea we had was calling `ExecutionPlan_Execute` within a new thread, such that when an exception was thrown we would simply terminate the thread and resume execution within the "parent" thread. This approach would have save us the need to introduce extra logic or code branching:
 
-```
+```c
 function Query_Execute() {
 	/* Call ExecutionPlan_Execute on a different thread 
 	 * and wait for it to exit */
@@ -161,7 +161,7 @@ But this design would introduce an overhead of additional thread execution (even
 
 Ultimately, we found out about `longjmp`, which is similar to `jump` but not restricted in scope to the caller function. We can simply jump from anywhere to a preset point somewhere else in our call stack, and the best part is our stack would unwind to that point as if we've returned from each nested function. kinda going back in time if you will.
 
-```
+```c
 // ExecutionPlan.c
 function Query_Execute() {
 	/* Set an exception-handling breakpoint to capture run-time errors.
@@ -201,10 +201,12 @@ SIValue AR_EXP_Evaluate(AR_ExpNode *root, const Record r) {
 
 This is the design we’ve introduced recently. In case you ever run a query in [RedisGraph](https://github.com/RedisGraph/RedisGraph) which violates the assumptions of a called function, this mechanism will be used to report an error back.
 
-    127.0.0.1:6379> GRAPH.query G "match (a:person) where toUpper(a.name) = 'Alexander' RETURN a"
-    (error) Type mismatch: expected String but was Integer
+```plaintext
+127.0.0.1:6379> GRAPH.query G "match (a:person) where toUpper(a.name) = 'Alexander' RETURN a"
+(error) Type mismatch: expected String but was Integer
+```
 
-Error reporting RedisGraph via redis-cli.
+Error reporting RedisGraph via `redis-cli`.
 
 Out of curiosity I searched [cpython github repository](https://github.com/python/cpython) (Python implementation) to see if there's a reference for `longjmp`. I was wondering if they've applied the same approach to exception handling as we did, but [my search](https://github.com/python/cpython/search?q=longjmp&unscoped_q=longjmp) came out with no results - I'll have to investigate further.
 

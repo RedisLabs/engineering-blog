@@ -1,4 +1,25 @@
 baseURL = "http://example.org/"
 languageCode = "en-us"
 title = "Redis Labs Engineering Blog"
-theme = "hugo-theme-basic"
+
+theme = "minimal-bootstrap-hugo-theme"
+pygmentsCodeFences = true
+#pygmentsStyle = "pygments"
+
+[menu]
+  [[menu.nav]]
+  name = "Posts"
+  url = "/"
+  weight = 1
+  [[menu.nav]]
+  name = "Tags"
+  url = "/tags/"
+  weight = 2
+  [[menu.nav]]
+  name = "About"
+  url = "/about/"
+  weight = 3
+  [[menu.nav]]
+  name = "RSS"
+  url = "/index.xml"
+  weight = 4

@@ -4,3 +4,9 @@
 [submodule "themes/hugo-theme-basic"]
 	path = themes/hugo-theme-basic
 	url = https://github.com/siegerts/hugo-theme-basic.git
+[submodule "themes/hugo-primer"]
+	path = themes/hugo-primer
+	url = https://github.com/qqhann/hugo-primer.git
+[submodule "themes/minimal-bootstrap-hugo-theme"]
+	path = themes/minimal-bootstrap-hugo-theme
+	url = https://github.com/zwbetz-gh/minimal-bootstrap-hugo-theme.git
