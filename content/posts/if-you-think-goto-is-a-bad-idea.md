@@ -209,5 +209,3 @@ This is the design we’ve introduced recently. In case you ever run a query in 
 Error reporting RedisGraph via `redis-cli`.
 
 Out of curiosity I searched [cpython github repository](https://github.com/python/cpython) (Python implementation) to see if there's a reference for `longjmp`. I was wondering if they've applied the same approach to exception handling as we did, but [my search](https://github.com/python/cpython/search?q=longjmp&unscoped_q=longjmp) came out with no results - I'll have to investigate further.
-
----
