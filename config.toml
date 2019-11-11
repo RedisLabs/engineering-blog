@@ -1,4 +1,4 @@
-baseURL = "https://redis-engineering.netlify.com/"
+baseURL = "https://engineering.redislabs.com/"
 languageCode = "en-us"
 title = "Redis Labs Engineering Blog"
 
