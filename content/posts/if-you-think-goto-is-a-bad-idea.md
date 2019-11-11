@@ -1,7 +1,7 @@
 ---
 title: "If you think goto is a bad idea, what would you say about longjmp?"
 
-date: 2019-11-07T17:46:51+02:00
+date: 2019-09-16
 draft: false
 ---
 
