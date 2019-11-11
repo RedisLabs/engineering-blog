@@ -1,8 +1,9 @@
 ---
 title: "If you think goto is a bad idea, what would you say about longjmp?"
-
 date: 2019-09-16
-draft: false
+authors:
+  - Roi Lipman
+tags: ["redisgraph", "c", "goto"]
 ---
 
 ![goto](/goto.png)

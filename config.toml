@@ -9,6 +9,7 @@ pygmentsStyle = "pygments"
 
 [taxonomies]
   tag = "tags"
+  author = "authors"
 
 [params]
   # description = "Some description"
