@@ -5,7 +5,7 @@ theme = "minimal-bootstrap-hugo-theme"
 pygmentsCodeFences = true
 # pygmentsStyle = "friendly"
 # pygmentsStyle = "github"
-pygmentsStyle = "pygments"
+# pygmentsStyle = "pygments"
 
 [taxonomies]
   tag = "tags"
