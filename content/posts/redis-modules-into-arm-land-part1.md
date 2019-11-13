@@ -19,7 +19,7 @@ If you'll follow through, you'll end up with a fully functional ARM build labora
 
 But first, let's take a look at RedisEdge.
 RedisEdge is not a Redis module, but an aggregate of three Redis modules: RedisGears, RedisAI, and RedisTimeSeries.
-It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Docker commands, load models into RedisAI, and execute Python gears scripts on RedisGears.
+It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Redis commands, load models into RedisAI, and execute Python gears scripts on RedisGears.
 Although one can easily get Docker out of the equation (by installing a Redis server and copying Redis Modules files), we'll see that Docker does actually provide significant added value, and it is worthwhile keeping it around.
 
 ![redis-edge-1](/redis-modules-arm-2.png)
@@ -74,9 +74,9 @@ Very good and detailed instructions of how to download and install the latest Ub
 
 #### Connecting to Workstation
 
-By "workstation" I refer to a Linux or macOS host, that holds ones development environment and git repositories. As a side note,  I warmly recommend using a desktop PC (that's another blog post), though most people use laptops. In either case, I also recommend having some virtualization infrastructure on your workstation, VMware Workstation/Fusion or VirtualBox being good solutions.
+By "workstation" I refer to a Linux or macOS host, that holds one's development environment and git repositories. As a side note,  I warmly recommend using a desktop PC (that's another blog post), though most people use laptops. In either case, I also recommend having some virtualization infrastructure on your workstation, VMware Workstation/Fusion or VirtualBox being good solutions.
 
-So, we need to establish a network connection between the RPi and the workstation. As mentioned before, RPi 4 has a 1Gbps NIC, which is a great improvement over the RPi 3 with its 100Mbps NIC. Connecting the RPi to a network is simple: get any gigabit ethernet umanaged switch and two ethernet cables, then hook the RPi to the switch and connect the switch to your gateway ethernet port. You can hook your workstation to the switch as well.
+So, we need to establish a network connection between the RPi and the workstation. As mentioned before, RPi 4 has a 1Gbps NIC, which is a great improvement over the RPi 3 with its 100Mbps NIC. Connecting the RPi to a network is simple: get any gigabit Ethernet unmanaged switch and two Ethernet cables, then hook the RPi to the switch and connect the switch to your gateway Ethernet port. You can hook your workstation to the switch as well.
 
 At this stage, we need to gather some information from the workstation. 
 
