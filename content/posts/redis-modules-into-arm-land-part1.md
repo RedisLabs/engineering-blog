@@ -23,7 +23,8 @@ It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, o
 Although one can easily get Docker out of the equation (by installing a Redis server and copying Redis Modules files), we'll see that Docker does actually provide significant added value, and it is worthwhile keeping it around.
 
 ![redis-edge-1](/redis-modules-arm-2.png)
-*Inside RedisEdge: moduels structure*
+
+*Inside RedisEdge: modules structure*
 
 Let's now take a look at each of the components of RedisEdge, to try to figure out what would it take to have them ported to ARM.
 First, **RedisTimeSeries**. 
