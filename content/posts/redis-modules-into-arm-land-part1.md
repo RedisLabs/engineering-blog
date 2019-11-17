@@ -27,10 +27,10 @@ Although one can easily get Docker out of the equation (by installing a Redis se
 *Inside RedisEdge: modules structure*
 
 Let's now take a look at each of the components of RedisEdge, to try to figure out what would it take to have them ported to ARM.
-First, **RedisTimeSeries**. 
+First, **[RedisTimeSeries](https://github.com/RedisTimeSeries/RedisTimeSeries)**. 
 It's a simple C library, built with make. Not even a configure script. No problems there.
-Next is **RedisGears**. It's too a C library built with plain make, but it does use an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
-Finally, **RedisAI**. It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like TensorFlow, PyTorch, and ONNXRuntime, in their C library form (most users typically use them in Python), with PyTorch and ONNXRuntime not officially supporting ARM.
+Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's too a C library built with plain make, but it does use an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
+Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form (most users typically use them in Python), with PyTorch and ONNXRuntime not officially supporting ARM.
 So the build requirements, as it seems, have deteriorated quickly. It went from building an innocent C library to compiling massive source bases with convoluted build systems.
 
 In the next sections, we will fit each components with its proper build method.
