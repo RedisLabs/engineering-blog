@@ -8,7 +8,7 @@ tags: ["redisjson", "rust"]
 
 ## Introduction
 
-While developing [redis-module-rs](https://github.com/RedisLabsModules/redismodule-rs), the [Rust](https://www.rust-lang.org) API for writing [Redis modules](https://redis.io/topics/modules-intro), I encountered the need to set up a custom memory allocator.
+While developing [redismodule-rs](https://github.com/RedisLabsModules/redismodule-rs), the [Rust](https://www.rust-lang.org) API for writing [Redis modules](https://redis.io/topics/modules-intro), I encountered the need to set up a custom memory allocator.
 
 Normally, when a Rust program needs to allocate some memory, such as when creating a `String` or `Vec` instance, it uses the [global allocator](https://doc.rust-lang.org/std/alloc/index.html) defined in the program. Since Redis modules are built as shared libraries to be loaded into Redis, Rust will use the [`System`](https://doc.rust-lang.org/std/alloc/struct.System.html) allocator, which is the default provided by the OS (using the `libc` [`malloc(3)`](https://linux.die.net/man/3/malloc) function).
 
@@ -101,6 +101,8 @@ This gives us the following stack trace (uninteresting parts removed):
 ```
 
 It still took me a lot head scratching and experimenting to figure it out, but here's what happened:
+
+The functions of the Redis modules API are accessed via C function pointers. Instead of relying on the dynamic linker to initialize these pointers, they are initialized explicitly by Redis as part of module initialization process.
 
 As the stack trace shows, during the loading of the module we call the `CString::new` function. This standard library library function allocates memory for a string. This, in turn, calls our allocator which would then call `RedisModule_Alloc.unwrap()...` to actually perform the allocation. This causes a chicken-and-egg problem. The Redis module is not ready yet, meaning our function pointers have not yet been initialized, so we can't call the relevant API to perform the allocation.
 
