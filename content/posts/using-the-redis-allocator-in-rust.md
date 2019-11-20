@@ -16,7 +16,7 @@ This behavior is problematic for several reasons.
 
 First of all, Redis may not be using the system allocator at all, relying on [`jemalloc`](http://jemalloc.net) instead. The `jemalloc` allocator is an alternative to the system `malloc` that includes many tweaks to avoid fragmentation, among other features. If the module uses the system allocator and Redis uses `jemalloc`, the allocation behavior will be inconsistent.
 
-Secondly, even if Redis were to always use the system allocator, memory allocated directly by the module would not be visible to Redis: It would not show up in commands such as [`info memory`](https://redis.io/commands/info), and would not be influenced by cleanup operations performed by Redis such as eviction of keys.
+Secondly, even if Redis always used the system allocator, memory allocated directly by the module would not be visible to Redis: It would not show up in commands such as [`info memory`](https://redis.io/commands/info), and would not be influenced by cleanup operations performed by Redis such as eviction of keys.
 
 For these reasons, the [Redis Modules API](https://redis.io/topics/modules-api-ref) provides hooks such as `RedisModule_Alloc` and `RedisModule_Free`. These are used much like the standard `malloc` and `free` calls, but make Redis aware of the allocated memory in addition to actually passing the call on to the memory allocator.
 
@@ -79,7 +79,7 @@ Backtrace:
 
 So, it looks like we had a null pointer dereference here (`3 ??? 0x0000000000000000 0x0 + 0`), but what are all these weird symbols starting with `_ZN...`?
 
-A bit of searching turns up that this is the way Rust does name mangling: Unlike in C, and similarly to C++, in Rust multiple functions with the same name can coexist, since there are various namespace mechanisms such as modules and traits to distinguish them. To generate unique symbols that are C-compatible, the compiler mangles these to long and ugly unique names. To demangle these names back into the original, we can filter the output through [`rustfilt`](https://crates.io/crates/rustfilt). 
+After a bit of searching, we find that this is the way Rust does name mangling: Unlike in C, and similarly to C++, in Rust multiple functions with the same name can coexist, since there are various namespace mechanisms such as modules and traits to distinguish them. To generate unique symbols that are C-compatible, the compiler mangles these to long and ugly unique names. To demangle these names back into the original, we can filter the output through [`rustfilt`](https://crates.io/crates/rustfilt). 
 
 This gives us the following stack trace (uninteresting parts removed):
 
@@ -100,17 +100,17 @@ This gives us the following stack trace (uninteresting parts removed):
 ...
 ```
 
-It still took me a lot head scratching and experimenting to figure it out, but here's what happened:
+It still took me a lot head-scratching and experimenting to figure it out, but here's what happened:
 
 The functions of the Redis modules API are accessed via C function pointers. Instead of relying on the dynamic linker to initialize these pointers, they are initialized explicitly by Redis as part of module initialization process.
 
-As the stack trace shows, during the loading of the module we call the `CString::new` function. This standard library library function allocates memory for a string. This, in turn, calls our allocator which would then call `RedisModule_Alloc.unwrap()...` to actually perform the allocation. This causes a chicken-and-egg problem. The Redis module is not ready yet, meaning our function pointers have not yet been initialized, so we can't call the relevant API to perform the allocation.
+As the stack trace shows, during the loading of the module we call the `CString::new` function. This standard library function allocates memory for a string. This, in turn, calls our allocator which would then call `RedisModule_Alloc.unwrap()...` to actually perform the allocation. This causes a chicken-and-egg problem. The Redis module is not ready yet, meaning our function pointers have not yet been initialized, so we can't call the relevant API to perform the allocation.
 
 ## The Solution
 
 I tried various approaches to solve this, but there seemed to be no clean way to avoid the allocation during module initialization. The second best thing would have been to use the standard allocator until the module is ready, and then switching to the custom one. However, Rust doesn't allow changing the allocator at runtime so we can't do that.
 
-What I ended up doing was to add a flag to the custom allocator that causes allocations to be passed through to the system allocator at startup. After the module initialization is complete, the flag is toggled so that further allocations are then performed via the Redis allocator. This solution still has edge cases, most importantly requiring that all previously allocated memory is freed before switching, otherwise that memory would leak. However, it's good enough for our purposes.
+I end up adding a flag to the custom allocator that causes allocations to be passed through to the system allocator at startup. After the module initialization is complete, the flag is toggled so that further allocations are then performed via the Redis allocator. This solution still has edge cases — most importantly requiring that all previously allocated memory is freed before switching, otherwise that memory would leak. However, it's good enough for our purposes.
 
 Here is what the final code looks like:
 
@@ -146,8 +146,8 @@ pub fn use_redis_alloc() {
 }
 ```
 
-We add a `static` flag named `USE_REDIS_ALLOC` that determine whether we should use the Redis allocator or the system one. It's important to guarantee safety when mutating static data, so we use an `AtomicBool` here that is `false` by default.
+We add a `static` flag named `USE_REDIS_ALLOC` that determines whether we should use the Redis allocator or the system one. It's important to guarantee safety when mutating static data, so we use an `AtomicBool` here that is `false` by default.
 
 In the module initialization code, we call `use_redis_alloc` when the module is ready to use. At this point we can safely start using the Redis allocator, and all future allocations will be accounted for by Redis.
 
-This takes care of the crash and ended up in the [`redis-module`](https://crates.io/crates/redis-module) crate. Feel free to check it out and let me know how you like it!
+This takes care of the crash and ends up in the [`redis-module`](https://crates.io/crates/redis-module) crate. Feel free to check it out and let me know how you like it!
