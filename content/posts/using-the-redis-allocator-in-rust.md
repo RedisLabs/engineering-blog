@@ -16,7 +16,7 @@ This behavior is problematic for several reasons.
 
 First of all, Redis may not be using the system allocator at all, relying on [`jemalloc`](http://jemalloc.net) instead. The `jemalloc` allocator is an alternative to the system `malloc` that includes many tweaks to avoid fragmentation, among other features. If the module uses the system allocator and Redis uses `jemalloc`, the allocation behavior will be inconsistent.
 
-Secondly, even if Redis always used the system allocator, memory allocated directly by the module would not be visible to Redis: It would not show up in commands such as [`info memory`](https://redis.io/commands/info), and would not be influenced by cleanup operations performed by Redis such as eviction of keys.
+Secondly, even if Redis always used the system allocator, memory allocated directly by the module would not be visible to Redis: it would not show up in commands such as [`info memory`](https://redis.io/commands/info), and would not be influenced by cleanup operations performed by Redis such as eviction of keys.
 
 For these reasons, the [Redis Modules API](https://redis.io/topics/modules-api-ref) provides hooks such as `RedisModule_Alloc` and `RedisModule_Free`. These are used much like the standard `malloc` and `free` calls, but make Redis aware of the allocated memory in addition to actually passing the call on to the memory allocator.
 
@@ -108,9 +108,9 @@ As the stack trace shows, during the loading of the module we call the `CString:
 
 ## The Solution
 
-I tried various approaches to solve this, but there seemed to be no clean way to avoid the allocation during module initialization. The second best thing would have been to use the standard allocator until the module is ready, and then switching to the custom one. However, Rust doesn't allow changing the allocator at runtime so we can't do that.
+I try various approaches to solve this, but there seems to be no clean way to avoid the allocation during module initialization. The second best thing would be to use the standard allocator until the module is ready, and then switch to the custom one. However, Rust doesn't allow changing the allocator at runtime so we can't do that.
 
-I end up adding a flag to the custom allocator that causes allocations to be passed through to the system allocator at startup. After the module initialization is complete, the flag is toggled so that further allocations are then performed via the Redis allocator. This solution still has edge cases — most importantly requiring that all previously allocated memory is freed before switching, otherwise that memory would leak. However, it's good enough for our purposes.
+I end up adding a flag to the custom allocator that causes allocations to be passed through to the system allocator at startup. After the module initialization is complete, the flag is toggled so that further allocations are then performed via the Redis allocator. This solution still has edge cases—most importantly requiring that all previously allocated memory is freed before switching, otherwise that memory would leak. However, it's good enough for our purposes.
 
 Here is what the final code looks like:
 
