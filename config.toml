@@ -12,7 +12,8 @@ pygmentsCodeFences = true
   author = "authors"
 
 [params]
-  # description = "Some description"
+  logo="favicon-32x32.png"
+  description = "Redis Labs Engineering Blog"
   # contentBackgroundColor = "#fff"
   # contentTextColor = "#212529"
   # contentLinkColor = "#007bff"
