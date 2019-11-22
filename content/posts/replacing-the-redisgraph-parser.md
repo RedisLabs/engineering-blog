@@ -20,8 +20,8 @@ Since its inception, RedisGraph used [Flex](https://github.com/westes/flex) and 
 
 To use [Martin Fowler's language of technical debt](https://martinfowler.com/bliki/TechnicalDebt.html), our self-maintained grammar charged us interest every time we introduced or modified a syntactical construct. Gradual improvement was not an option, however, so we were reluctant to undertake the effort of a full replacement. We finally relented when working on the WITH clause, which is how Cypher allows for multiple queries to be chained into a single atomic execution. Unlike subqueries in SQL, which create a tree of independent executions, the WITH clause flattens query parts into a linear composition:
 
-![Multi-Part Query Railroad Diagram](multipart_query.png)
-[Cypher railroad diagram](https://s3.amazonaws.com/artifacts.opencypher.org/railroad/MultiPartQuery.html) for multi-part queries
+![Multi-Part Query Railroad Diagram](/multipart_query.png)
+[Cypher railroad diagram for multi-part queries](https://s3.amazonaws.com/artifacts.opencypher.org/railroad/MultiPartQuery.html)
 
 Our original grammar was effective at interpreting a sequence of clauses as a self-contained query, but it would have required a major rewrite to interpret that same sequence as one scope capable of reading from and projecting into others. libcypher-parser had already solved this problem and many more, so we started the even more ambitious rewrite of scrapping our parser and building off an open-source project.
 
@@ -38,7 +38,7 @@ As an aside, it is interesting to note that instead of building a LALR parser (a
 From start to finish, this undertaking took about 3 months, though even now we have open PRs to better leverage the new system. We now work with an immutable (though annotatable) AST, and have radically modified our access patterns and AST translation layer.
 
 To torture the metaphor of technical debt a little more, we recouped more than the principal over the course of this refactor. libcypher-parser gave us automatic support for a  number of features, ranging from syntactic sugar like implicit edges and partially-specified traversal ranges:
-```
+```console
 MATCH (node1)-->(node2), (src)-[*2..]->(two_or_more_hops)
 ```
 To more robust query validations, built-in precedence management for operators and comparisons, and handling for more edge cases than I can recall.
@@ -93,10 +93,15 @@ libcypher-parser AST:
 
 ## Lessons learned
 I think this captures the most important things I've learned (outside of my editor window) over the course of this project:
+
 1) Recognize when the time has come to pay back technical debt.
+
 2) Embrace what open-source gives, and give everything you can back!
+
 3) Strong abstraction layers prevent many headaches.
+
 4) Obey the wisdom of "Don't reinvent the wheel."
+
 5) After you inevitably fail to follow 4 (or any other axiom of programming), think twice next time!
 
 ---
