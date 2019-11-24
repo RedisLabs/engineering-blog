@@ -3,8 +3,8 @@ title: "If you think goto is a bad idea, what would you say about longjmp?"
 date: 2019-09-16
 authors:
   - author: 
-      name: Roi Lipman
-      link: https://github.com/swilly22
+      name: "Roi Lipman"
+      link: "https://github.com/swilly22"
 tags: ["redisgraph", "c", "goto"]
 ---
 
