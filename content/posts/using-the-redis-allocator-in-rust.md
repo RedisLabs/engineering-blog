@@ -2,7 +2,9 @@
 title: "Using the Redis Allocator in Rust"
 date: 2019-11-12
 authors:
-  - Gavrie Philipson
+  - author: 
+      name: "Gavrie Philipson"
+      link: "https://github.com/gavrie"
 tags: ["redisjson", "rust"]
 ---
 

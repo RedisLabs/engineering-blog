@@ -16,7 +16,7 @@
     {{ $customDateFormat := "January 2, 2006" }}
     {{ with .Site.Params.customDateFormat }}{{ $customDateFormat = . }}{{ end }}
     <br>
-    <small class="text-secondary">{{- range .Params.authors }}{{ . }}{{ end }}</small> |
+    <small class="text-secondary">{{- range .Params.authors }}<a href="{{ .author.link }}">{{ .author.name }}</a>{{ end }}</small> |
     <small class="text-secondary">{{ .PublishDate.Format $customDateFormat }}</small>
 
     {{ partial "tags" . }}
