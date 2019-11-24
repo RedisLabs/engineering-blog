@@ -33,29 +33,28 @@ Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's a C lib
 Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form - most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
 So the build requirements, as it seems, have deteriorated quickly. It went from building an innocent C library to compiling massive source bases with convoluted build systems.
 
-In the next sections, we will fit each components with its proper build method.
+In the following sections, we will fit each component with its proper build method.
 
 ## Building for ARM
 
 At this point, we'll pause and take stock of what is required to build software for ARM.
 The obvious way is to use an ARM-based device, like Raspberry Pi. Once set up, you'll be able to build and test in the most natural manner. 
 
-The testing medium is important: even though you can build almost every ARM software without a physical ARM device, there is no reliable way of testing the outcome in a reliable way without such a device, especially with non-standard devices. Therefore, as much as virtualized/emulated/containerized test may be useful, you should always test your software on its designated target device.
+The testing medium is important: even though you can build almost every ARM software without a physical ARM device, there is no way to reliably test the outcome without such a device, especially with non-standard devices. Therefore, while a virtualized/emulated/containerized test may be useful, you should always test your software on its designated target device.
 
-A Raspberry Pi 4 with 4GB RAM (and not less importantly, a 1Gbps NIC) and a fast microSD card looks indeed very promising.
+A Raspberry Pi 4 with 4GB RAM (and a 1Gbps NIC, no less importantly) and a fast microSD card looks promising.
 
-Now, regarding the OS selection on ARM: the offerings are limited, and the rule of thumb is going for the latest release of either Raspbian (which is customized Debian distribution for RPi) or either Ubuntu or Fedora, both offering easy-to-install ARM systems. Do not worry about immaturity: it was proven time
-and again that newer systems work better and old ones can't keep up.
+Regarding the OS selection on ARM: the offerings are limited, and the rule of thumb is to go for the latest release of Raspbian (which is customized Debian distribution for RPi), Ubuntu, or Fedora, the latter two offering easy-to-install ARM systems. Do not worry about immaturity: it was proven time and again that newer systems work better and old ones can't keep up.
 
 Installing an OS brings us to the first dilemma: 
 If we install Raspbian, we get a 32-bit OS (i.e., arm32v7 platform).
 If we choose 64-bit Ubuntu, we get an arm64v8 platform (we discuss ARM platforms in detail later). 
-If we intend (as we do with RedisEdge) to support both platforms, we can either get two SD cards, and install each OS on its own card, taking turns on the device, or get two RPi devices (which is not terribly expensive). I recommend the latter.
+If we intend to support both platforms (as we do with RedisEdge), we can either get two SD cards and install each OS on its own card while taking turns on the device, or get two RPi devices (which is not terribly expensive). I recommend the latter.
 
 And now, for the principal principle of OS selection: our goal is to have a stable system with the newest Docker version. Any OS that will satisfy these requirements will do.
-That's right: we're going to use Docker to fetch the OS we really with to build for, using the underlying OS as infrastructure. This will also help keep our build experiments properly isolated.
+That's right: we're going to use Docker to fetch the OS we really wish to build for, using the underlying OS as infrastructure. This will also help keep our build experiments properly isolated.
 
-If you have a RPi device at your disposal, you can now proceed to making it functional. Otherwise, you can skip this section, as we will present build methods that do not require a physical ARM machine.
+If you have a RPi device at your disposal, you can now proceed with making it functional. In the next post, as we will present build methods that do not require a physical ARM machine.
 
 #### Installing Ubuntu 19.04 on RPi 3 & 4
 
@@ -63,7 +62,7 @@ Very good and detailed instructions of how to download and install the latest Ub
 
 - Get a microSD Card: 64GB, Class 10, anything comparable (that is, at the same price level) to Samsung EVO or SanDisk Ultra will do.
 - Download the OS [image](http://cdimage.ubuntu.com/releases/19.04/release/ubuntu-19.04-preinstalled-server-arm64+raspi3.img.xz) (typically .img or .raw format, archived) and extract it. While it is possible to install from an .iso file, using .img images is much more straightforward and therefore recommended.
-- Write it to a microSD card with a tool like [Balena Etcher](https://www.balena.io/etcher/) (it's available for all platforms, I personally use [Win32 Disk Imager](https://sourceforge.net/projects/win32diskimager/)). In order to write, you should use the build-in microSD reader in your laptop or get an external one with a USB interface.
+- Write it to a microSD card with a tool like [Balena Etcher](https://www.balena.io/etcher/) (it's available for all platforms, I personally use [Win32 Disk Imager](https://sourceforge.net/projects/win32diskimager/)). In order to write, you should use the built-in microSD reader in your laptop or get an external one with a USB interface.
 - Insert the microSD into the RPi and power the device on.
 - Username/password: ubuntu/ubuntu
 
@@ -72,9 +71,9 @@ Very good and detailed instructions of how to download and install the latest Ub
 * Repeat the above steps, with Raspbian Lite [image](https://downloads.raspberrypi.org/raspbian_lite_latest).
 * Username/password: pi/raspberry
 
-#### Connecting to Workstation
+#### Connecting to workstation
 
-By "workstation" I refer to a Linux or macOS host, that holds one's development environment and git repositories. As a side note,  I warmly recommend using a desktop PC (that's another blog post), though most people use laptops. In either case, I also recommend having some virtualization infrastructure on your workstation, VMware Workstation/Fusion or VirtualBox being good solutions.
+By "workstation," I'm referring to a Linux or macOS host that holds one's development environment and git repositories. As a side note, I highly recommend using a desktop PC (that's another blog post), though most people use laptops. In either case, I also recommend having some virtualization infrastructure on your workstation, such as VMware Workstation/Fusion or VirtualBox.
 
 So, we need to establish a network connection between the RPi and the workstation. As mentioned before, RPi 4 has a 1Gbps NIC, which is a great improvement over the RPi 3 with its 100Mbps NIC. Connecting the RPi to a network is simple: get any gigabit Ethernet unmanaged switch and two Ethernet cables, then hook the RPi to the switch and connect the switch to your gateway Ethernet port. You can hook your workstation to the switch as well.
 
@@ -88,7 +87,7 @@ id
 
 We'll call them MY-UID & MY-GID.
 
-Next, we need to find out what's our time zone
+Next, we need to find out what's our time zone:
 
 ```
 timedatectl
@@ -104,7 +103,7 @@ ip a
 
 We'll call is MY-WORKSTATION-IP.
 
-#### RPi Configuration
+#### RPi configuration
 
 During the initial setup, you'll need to have the RPi connected to a monitor and a keyboard. Once setup is complete, it can be controlled from your workstation via SSH.
 
