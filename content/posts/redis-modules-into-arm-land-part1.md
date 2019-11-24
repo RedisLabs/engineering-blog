@@ -1,14 +1,14 @@
 ---
-title: "Getting Redis Modules into ARM land - Part 1"
+title: "Getting Redis Modules Into ARM Land - Part 1"
 date: 2019-11-13
 authors:
   - Rafi Einstein
 tags: ["redisedge", "arm"]
 ---
 
-Our motivation at Redis Labs of getting into ARM land and dragging Redis Modules along was RedisEdge.
+ Here at Redis Labs, RedisEdge was our motivation for getting into ARM land and dragging Redis modules along.
 Redis, of course, has long been native in this land, in both glibc and alpine/musl variants.
-Redis Modules, although already on the multi-platform scene (running on various Linux distributions and supporting macOS, mainly for the sake of development experience), have been more of an enterprise/data-center thing, all until RedisEdge came along, targeting IoT devices.
+Redis modules, although already on the multi-platform scene (running on various Linux distributions and supporting macOS, mainly for the sake of development experience), have been more of an enterprise/data-center thing, all until RedisEdge came along, targeting IoT devices.
 In this series of posts, I'll describe our vision of ARM platform support and the developer user experience, as well as the steps we took along the path, as the way was as valuable as the outcome.
 
 If you'll follow through, you'll end up with a fully functional ARM build laboratory.
@@ -20,17 +20,17 @@ If you'll follow through, you'll end up with a fully functional ARM build labora
 But first, let's take a look at RedisEdge.
 RedisEdge is not a Redis module, but an aggregate of three Redis modules: RedisGears, RedisAI, and RedisTimeSeries.
 It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Redis commands, load models into RedisAI, and execute Python gears scripts on RedisGears.
-Although one can easily get Docker out of the equation (by installing a Redis server and copying Redis Modules files), we'll see that Docker does actually provide significant added value, and it is worthwhile keeping it around.
+Although one can easily remove Docker from the equation by installing a Redis server and copying Redis modules files, we'll see that Docker actually provides significant added value and is worthwhile to keep.
 
 ![redis-edge-1](/redis-modules-arm-2.png)
 
 *Inside RedisEdge: modules structure*
 
-Let's now take a look at each of the components of RedisEdge, to try to figure out what would it take to have them ported to ARM.
+Let's now take a look at each component of RedisEdge to figure out what would it take to have them ported to ARM.
 First, **[RedisTimeSeries](https://github.com/RedisTimeSeries/RedisTimeSeries)**. 
 It's a simple C library, built with make. Not even a configure script. No problems there.
-Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's too a C library built with plain make, but it does use an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
-Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form (most users typically use them in Python), with PyTorch and ONNXRuntime not officially supporting ARM.
+Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's a C library built with plain make, and it also uses an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
+Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form - most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
 So the build requirements, as it seems, have deteriorated quickly. It went from building an innocent C library to compiling massive source bases with convoluted build systems.
 
 In the next sections, we will fit each components with its proper build method.
@@ -102,13 +102,13 @@ Finally, we'll need your workstation's IP:
 ip a
 ```
 
-We'll call if MY-WORKSTATION-IP.
+We'll call is MY-WORKSTATION-IP.
 
 #### RPi Configuration
 
-During the initial setup, you'll need to have the RPi connected to a monitor and a keyboard. Once setup is done, it can be controlled from your workstation via SSH.
+During the initial setup, you'll need to have the RPi connected to a monitor and a keyboard. Once setup is complete, it can be controlled from your workstation via SSH.
 
-Another good practice is to avoid cloning source code into the RPi, but rather share it between your workstation and RPi via NFS.
+Another good practice is to avoid cloning source code into the RPi, instead sharing it between your workstation and RPi via NFS.
 
 For convenience, I assume we operate as root (via ```sudo bash```, for instance).
 
@@ -173,7 +173,7 @@ apt install -qy tmux ca-certificates curl wget htop mc tmux
 
 #### On the workstation side
 
-Regarding git repositories, I'll use the following terminology and structure throughout the discussion. This is not essential and one may organize matters differently. The term "view" refers to a set of git repository clones, that one uses in a certain context. For instance, if we work on RedisEdge modules in the context of ARM compilation, we'll end up with the following directory structure:
+Regarding git repositories, I'll use the following terminology and structure throughout the discussion. This is not essential and one may organize matters differently. The term "view" refers to a set of git repository clones that one uses in a certain context. For instance, if we work on RedisEdge modules in the context of ARM compilation, we'll end up with the following directory structure:
 
 ```
 /views/arm1/
@@ -192,7 +192,7 @@ mkdir /views
 ln -s /views /v
 ```
 
-So, finally, we get to set up NFS:
+So, finally, we get to set up NFS.
 
 Now proceed as root:
 
