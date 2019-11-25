@@ -2,7 +2,9 @@
 title: "Getting Redis Modules Into ARM Land - Part 1"
 date: 2019-11-13
 authors:
-  - Rafi Einstein
+  - author:
+      name: "Rafi Einstein"
+      link: "https://github.com/rafie"
 tags: ["redisedge", "arm"]
 ---
 
