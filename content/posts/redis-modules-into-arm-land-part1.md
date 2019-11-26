@@ -8,12 +8,12 @@ authors:
 tags: ["redisedge", "arm"]
 ---
 
- Here at Redis Labs, RedisEdge was our motivation for getting into ARM land and dragging Redis modules along.
+Here at Redis Labs, RedisEdge was our motivation for getting into ARM land and dragging Redis modules along.
 Redis, of course, has long been native in this land, in both glibc and alpine/musl variants.
-Redis modules, although already on the multi-platform scene (running on various Linux distributions and supporting macOS, mainly for the sake of development experience), have been more of an enterprise/data-center thing, all until RedisEdge came along, targeting IoT devices.
-In this series of posts, I'll describe our vision of ARM platform support and the developer user experience, as well as the steps we took along the path, as the way was as valuable as the outcome.
+Redis modules have already been on the multi-platform scene, running on various Linux distributions and supporting macOS mainly for the sake of development experience. However, it was more enterprise/data-center-oriented until RedisEdge, which targets IoT devices.
+In this series of posts, I'll describe our vision of ARM platform support and the developer user experience, as well as the steps we took to get there.
 
-If you'll follow through, you'll end up with a fully functional ARM build laboratory.
+If you follow along, you'll end up with a fully functional ARM build laboratory.
 
 ## Inside RedisEdge
 
@@ -32,7 +32,7 @@ Let's now take a look at each component of RedisEdge to figure out what would it
 First, **[RedisTimeSeries](https://github.com/RedisTimeSeries/RedisTimeSeries)**. 
 It's a simple C library, built with make. Not even a configure script. No problems there.
 Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's a C library built with plain make, and it also uses an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
-Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form - most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
+Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form — most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
 So the build requirements, as it seems, have deteriorated quickly. It went from building an innocent C library to compiling massive source bases with convoluted build systems.
 
 In the following sections, we will fit each component with its proper build method.
