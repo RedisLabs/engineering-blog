@@ -2,7 +2,7 @@
 title: "Lessons learned while replacing the RedisGraph parser"
 date: 2019-11-22
 authors:
-  - author:
+  - author: 
       name: "Jeffrey Lovitz"
       link: "https://github.com/jeffreylovitz"
 tags: ["redisgraph", "c", "cypher", "parsers"]
