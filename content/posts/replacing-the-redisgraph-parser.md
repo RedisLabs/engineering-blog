@@ -2,10 +2,10 @@
 title: "Lessons learned while replacing the RedisGraph parser"
 date: 2019-11-22
 authors:
-  - author: 
+  - author:
       name: "Jeffrey Lovitz"
       link: "https://github.com/jeffreylovitz"
-tags: ["redisgraph", "c", "cypher", "parsers"]
+tags: ["redisgraph", "c", "cypher", "parser", "oss"]
 ---
 
 ![parser](/parser.png)
@@ -20,15 +20,15 @@ Since its inception, RedisGraph used [Flex](https://github.com/westes/flex) and 
 
 > The extra effort that it takes to add new features is the interest paid on the debt.
 
-To use [Martin Fowler's language of technical debt](https://martinfowler.com/bliki/TechnicalDebt.html), our self-maintained grammar charged us interest every time we introduced or modified a syntactical construct. Gradual improvement was not an option, however, so we were reluctant to undertake the effort of a full replacement. We finally relented when working on the WITH clause, which is how Cypher allows for multiple queries to be chained into a single atomic execution. Unlike subqueries in SQL, which create a tree of independent executions, the WITH clause flattens query parts into a linear composition:
+To use [Martin Fowler's language of technical debt](https://martinfowler.com/bliki/TechnicalDebt.html), our self-maintained grammar charged us interest every time we introduced or modified a syntactical construct. Gradual improvement was not an option, however, so we were reluctant to undertake the effort of a full replacement. We finally relented when working on the `WITH`clause, which is how Cypher allows for multiple queries to be chained into a single atomic execution. Unlike subqueries in SQL, which create a tree of independent executions, the `WITH` clause flattens query parts into a linear composition:
 
-![Multi-Part Query Railroad Diagram](/multipart_query.png)
+![Multi-Part Query Railroad Diagram](/MultiPartQuery.svg)
 [Cypher railroad diagram for multi-part queries](https://s3.amazonaws.com/artifacts.opencypher.org/railroad/MultiPartQuery.html)
 
 Our original grammar was effective at interpreting a sequence of clauses as a self-contained query, but it would have required a major rewrite to interpret that same sequence as one scope capable of reading from and projecting into others. libcypher-parser had already solved this problem and many more, so we started the even more ambitious rewrite of scrapping our parser and building off an open source project.
 
 ## The joy of FOSS
-libcypher-parser was a perfect fit for our needs. Beyond the core criteria of being a feature-rich Cypher parser, it is a C implementation, stable but evolving, and—above all—open source.
+libcypher-parser was a perfect fit for our needs. Beyond the core criteria of being a feature-rich Cypher parser, it is a C implementation, stable but evolving, and — above all — open source.
 
 RedisGraph is a better project for the issues opened, features requested, and contributions made by our open source users. While integrating libcypher-parser, we've contributed code and feedback upstream, and collaboration that improves both projects is ongoing.
 
@@ -50,13 +50,13 @@ We also took advantage of this moment to migrate all parsing to RedisGraph threa
 ## The strength of strong abstractions
 Beyond these improvements, the greatest benefit of this refactor has been a much stronger abstraction layer between the AST and the tree of operations required to act upon it.
 
-Our earlier grammar made it easy to rely directly on the AST for the construction of operations, especially in superficially simple clauses like CREATE. This approach belies the complexity of circumstances that need to be considered, however. For example, given the query:
+Our earlier grammar made it easy to rely directly on the AST for the construction of operations, especially in superficially simple clauses like `CREATE`. This approach belies the complexity of circumstances that need to be considered, however. For example, given the query:
 ```console
 MATCH (p:Person {name: 'Jeffrey'})
 CREATE (p)-[:EMPLOYED_BY]->(c: Company {name: 'Redis Labs'})
 RETURN *
 ```
-The CREATE operation does not exist in isolation—it relies on projections from previous operations and itself projects data that must be returned to the user.
+The `CREATE` operation does not exist in isolation—it relies on projections from previous operations and itself projects data that must be returned to the user.
 
 Having a strong abstraction layer between the AST and the execution tree of operations allows for far easier extension as the complexity of a project increases.
 
