@@ -8,7 +8,7 @@ authors:
 tags: ["redisedge", "arm"]
 ---
 
-Here at Redis Labs, RedisEdge was our motivation for getting into ARM land and dragging Redis modules along.
+Here at Redis Labs, our motivation to bring Redis modules into ARM land was RedisEdge.
 Redis, of course, has long been native in this land, in both glibc and alpine/musl variants.
 Redis modules have already been on the multi-platform scene, running on various Linux distributions and supporting macOS mainly for the sake of development experience. However, it was more enterprise/data-center-oriented until RedisEdge, which targets IoT devices.
 In this series of posts, I'll describe our vision of ARM platform support and the developer user experience, as well as the steps we took to get there.
@@ -19,7 +19,7 @@ If you follow along, you'll end up with a fully functional ARM build laboratory.
 
 ![redisedge1](/redis-modules-arm-1.png)
 
-But first, let's take a look at RedisEdge.
+Let's take a look at RedisEdge.
 RedisEdge is not a Redis module, but an aggregate of three Redis modules: RedisGears, RedisAI, and RedisTimeSeries.
 It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Redis commands, load models into RedisAI, and execute Python gears scripts on RedisGears.
 Although one can easily remove Docker from the equation by installing a Redis server and copying Redis modules files, we'll see that Docker actually provides significant added value and is worthwhile to keep.
@@ -56,7 +56,7 @@ If we intend to support both platforms (as we do with RedisEdge), we can either 
 And now, for the principal principle of OS selection: our goal is to have a stable system with the newest Docker version. Any OS that will satisfy these requirements will do.
 That's right: we're going to use Docker to fetch the OS we really wish to build for, using the underlying OS as infrastructure. This will also help keep our build experiments properly isolated.
 
-If you have a RPi device at your disposal, you can now proceed with making it functional. In the next post, as we will present build methods that do not require a physical ARM machine.
+If you have a RPi device at your disposal, you can now proceed with making it functional. In the next post, we will present build methods that do not require a physical ARM machine.
 
 #### Installing Ubuntu 19.04 on RPi 3 & 4
 
