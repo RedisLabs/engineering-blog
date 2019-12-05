@@ -28,7 +28,7 @@ To use [Martin Fowler's language of technical debt](https://martinfowler.com/bli
 Our original grammar was effective at interpreting a sequence of clauses as a self-contained query, but it would have required a major rewrite to interpret that same sequence as one scope capable of reading from and projecting into others. libcypher-parser had already solved this problem and many more, so we started the even more ambitious rewrite of scrapping our parser and building off an open source project.
 
 ## The joy of FOSS
-libcypher-parser was a perfect fit for our needs. Beyond the core criteria of being a feature-rich Cypher parser, it is a C implementation, stable but evolving, and — above all — open source.
+libcypher-parser was a perfect fit for our needs. Beyond the core criteria of being a feature-rich Cypher parser, it is a C implementation, stable but evolving, and—above all—open source.
 
 RedisGraph is a better project for the issues opened, features requested, and contributions made by our open source users. While integrating libcypher-parser, we've contributed code and feedback upstream, and collaboration that improves both projects is ongoing.
 
