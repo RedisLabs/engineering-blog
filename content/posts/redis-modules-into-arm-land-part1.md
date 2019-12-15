@@ -21,7 +21,7 @@ If you follow along, you'll end up with a fully functional ARM build laboratory.
 
 Let's take a look at RedisEdge.
 RedisEdge is not a Redis module, but an aggregate of three Redis modules: RedisGears, RedisAI, and RedisTimeSeries.
-It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Redis commands, load models into RedisAI, and execute Python gears scripts on RedisGears.
+It is distributed as a Docker image, which is based on Redis Server 5.0. Thus, one can simply pull the image, run it, and start issuing Redis commands; load models into RedisAI; and execute Python gears scripts on RedisGears.
 Although one can easily remove Docker from the equation by installing a Redis server and copying Redis modules files, we'll see that Docker actually provides significant added value and is worthwhile to keep.
 
 ![redis-edge-1](/redis-modules-arm-2.png)
@@ -32,7 +32,7 @@ Let's now take a look at each component of RedisEdge to figure out what would it
 First, **[RedisTimeSeries](https://github.com/RedisTimeSeries/RedisTimeSeries)**. 
 It's a simple C library, built with make. Not even a configure script. No problems there.
 Next is [**RedisGears**](https://github.com/RedisGears/RedisGears). It's a C library built with plain make, and it also uses an embedded Python 3.7 interpreter, which is built from source. This requires running automake to generate a platform-specific makefile.
-Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form — most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
+Finally, [**RedisAI**](https://github.com/RedisAI/RedisAI). It's a C library built with CMake, and it includes modular "engines" that allow abstraction and encapsulation of AI libraries like [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), and [ONNXRuntime](https://github.com/microsoft/onnxruntime), in their C library form—most users typically use them in Python, with PyTorch and ONNXRuntime not officially supporting ARM.
 So the build requirements, as it seems, have deteriorated quickly. It went from building an innocent C library to compiling massive source bases with convoluted build systems.
 
 In the following sections, we will fit each component with its proper build method.
