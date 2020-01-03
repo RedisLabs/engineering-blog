@@ -1,16 +1,8 @@
 <nav class="custom-navbar">
   <div class="container">
-    <a href="https://redislabs.com" target="_blank">
-      <img class="navbar-logo" src="/2_Redis-labs-logo-reversed.svg">
-    </a>
+    <img src="/2_Redis-labs-logo-reversed.svg" style="width: 148px; margin-right: 1em;">
     {{ range .Site.Menus.nav }}
     <a href="{{ .URL }}">{{ .Name }}</a>
     {{ end }}
   </div>
 </nav>
-
-<style>
-  .navbar-logo {
-    height: 25px;
-  }
-</style>
