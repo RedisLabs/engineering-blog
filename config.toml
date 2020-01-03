@@ -35,7 +35,7 @@ pygmentsCodeFences = true
 
 [menu]
   [[menu.nav]]
-  name = "Posts"
+  name = "Engineering Blog"
   url = "/"
   weight = 1
 
