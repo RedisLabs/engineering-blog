@@ -5,13 +5,13 @@ authors:
   - author:
       name: "Itamar Haber"
       link: "https://twitter.com/itamarhaber"
-tags: ["caching", "client", "python"]
+tags: ["cache", "client", "python"]
 ---
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="/client-side-cache-chart.js"></script>
 
-Everybody knows that there are only two hard problems in computer science: cache invalidation and naming things. This post, as you may have guessed from its name, is about dealing with the first one: cache invalidation problem. I wrote it because a new feature in Redis v6 makes it easier for clients to manage a local cache. This mini-project's source files can be found in the [rsacsc-py](https://github.com/itamarhaber/rsacsc-py) repository.
+Everybody knows that there are only two hard problems in computer science: cache invalidation and naming things. This post, as you may have guessed from its name, is about dealing with the first one: cache invalidation problem. I wrote it because a new feature in Redis 6 makes it easier for clients to manage a local cache. This mini-project's source files can be found in the [rsacsc-py](https://github.com/itamarhaber/rsacsc-py) repository.
 
 ## Preface
 I am not going to address the need for caching per se. We cache data practically in every aspect of computer engineering to reduce the time it takes us to access it subsequently. We cache on oh-so-many levels, and will continue to do so until someone finally cracks [instantaneous communication](https://phys.org/news/2019-12-chip-to-chip-quantum-teleportation-harnessing-silicon.html), and probably afterwards.
@@ -25,7 +25,7 @@ The aptly-named [server-assisted client-side caching](https://redis.io/topics/cl
 Because Redis server-assisted client-side caching (RSACSC for short) is admittedly somewhat [immature](http://antirez.com/news/131) in the first release candidate, I wanted to take it out for a real-world test drive. The idea was to make a proof of concept to get a better feeling for what's there and what's still missing.
 
 ## Design notes
-I was leaning towards doing this in Python, and a short [informal poll](https://twitter.com/itamarhaber/status/1207773964648550403) supported this approach. I had a three-part setup in mind:
+I was leaning towards prototyping this in Python, and a short [informal poll](https://twitter.com/itamarhaber/status/1207773964648550403) supported this approach. I had a three-part setup in mind:
 
 1. A connection to Redis to read data
 1. A cache to keep the data local
@@ -33,7 +33,7 @@ I was leaning towards doing this in Python, and a short [informal poll](https://
 
 To make the connection, I chose [redis-py](https://github.com/andymccurdy/redis-py). It provides the `Redis` class that is a straight-forward zero-fuss client, and Python's nature makes extending it easy.
 
-The requirements from the cache component are basic, so I was perfectly happy adapting the [LRU example in Python's `OrederedDict` documentation](https://docs.python.org/3/library/collections.html#ordereddict-examples-and-recipes).
+The requirements from the cache component are basic, so I was perfectly happy adapting the [LRU cache example in Python's `OrederedDict` documentation](https://docs.python.org/3/library/collections.html#ordereddict-examples-and-recipes).
 
 ## Making a regular connection into a cached one
 For this experiment, I chose to implement caching for a single Redis command, namely [`GET`](https://redis.io/commands/get). The premise is to make the client use the _read through_ pattern: that is, to attempt a read from the local cache and defer to Redis in case of a miss. Subclassing the `Redis` client and overriding its `get()` method gives us the following:
@@ -86,7 +86,7 @@ That means the client needs to employ the same hashing function to track how the
 ```
 
 # Handling invalidation
-How an invalidation message is sent to a tracked client depends on the [Redis Serialization Protocol (RESP)](https://redis.io/topics/protocol) that the client is using. Earlier versions of Redis use RESP2, but its successor [RESP3](https://github.com/antirez/RESP3/blob/master/spec.md) is already present in the v6 and will deprecate the older protocol completely in version 7.
+How an invalidation message is sent to a tracked client depends on the [Redis Serialization Protocol (RESP)](https://redis.io/topics/protocol) that the client is using. Earlier versions of Redis use RESP2, but its successor [RESP3](https://github.com/antirez/RESP3/blob/master/spec.md) is already present in the Redis 6 and will deprecate the older protocol completely in Redis 7.
 
 RESP3 packs in many new features, including the ability for the server to "push" additional information on an existing connection to a client, alongside the actual replies. This channel is employed for delivering invalidation notifications when using the server-assisted client-side caching ability.
 
