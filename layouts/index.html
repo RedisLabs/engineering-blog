@@ -1,12 +1,9 @@
 {{- define "main" -}}
 
-{{ $homepage := "Home" }}
-{{ with .Site.Menus.nav }}
-  {{ range first 1 . }}
-    {{ $homepage = .Name }}
-  {{ end }}
-{{ end }}
-<h1>{{ $homepage }}</h1>
+<h1>{{ .Site.Params.Description }}</h1>
+<blockquote class="blockquote">
+  <p class="mb-0">Technical posts, by engineers, for engineers.</p>
+</blockquote>
 
 {{ $pages := where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{ range $pages.ByPublishDate.Reverse }}
@@ -26,7 +23,5 @@
     {{ end }}
   </p>
 {{ end }}
-
-{{ partial "footer.html" . }}
 
 {{- end -}}
