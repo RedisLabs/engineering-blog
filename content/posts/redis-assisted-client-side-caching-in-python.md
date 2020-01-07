@@ -1,6 +1,6 @@
 ---
 title: "Redis-Assisted Client-Side Caching in Python"
-date: 2020-01-01
+date: 2020-01-07
 authors:
   - author:
       name: "Itamar Haber"
@@ -65,7 +65,7 @@ Once the Redis client has opted-in to being tracked, the server maintains a reco
 
 This reduces the server resources required to track multiple keys for multiple clients. The invalidation messages sent by Redis, therefore, consist of _slots_ that need to be invalidated rather than key names. It is up to the client to infer the relevant key names that need to be removed from its cache given the slot.
 
-That means the client needs to employ the same hashing function to track how the keys in the local cache map to slots. That let’s us perform slot-based invalidation of the client's cache when an invalidation notification arrives. For that, we'll use the `add()` and `discard()` methods when keys are added and discarded from the local cache, respectively.
+That means the client needs to employ the same hashing function to track how the keys in the local cache map to slots. That lets us perform slot-based invalidation of the client's cache when an invalidation notification arrives. For that, we'll use the `add()` and `discard()` methods when keys are added and discarded from the local cache, respectively.
 
 ```python
     def slot(key):
@@ -90,7 +90,7 @@ How an invalidation message is sent to a tracked client depends on the [Redis Se
 
 RESP3 packs in many new features, including the ability for the server to "push" additional information on an existing connection to a client, alongside the actual replies. This channel is employed for delivering invalidation notifications when using the server-assisted client-side caching ability.
 
-However, because RESP3 is so new, only a few clients currently support it., so RSACSC also works with RESP2. Because RESP2 lacks the "push" ability, RSACSC broadcasts invalidation messages to interested parties using the existing support for [PubSub](https://redis.io/topics/pubsub) in Redis.
+However, because RESP3 is so new, only a few clients currently support it, so RSACSC also works with RESP2. Because RESP2 lacks the "push" ability, RSACSC broadcasts invalidation messages to interested parties using the existing support for [PubSub](https://redis.io/topics/pubsub) in Redis.
 
 Handling the invalidations and the keys-to-slots mapping is what the manager is for. Here's what it looks like:
 
@@ -164,9 +164,9 @@ The last test extends `eleven_reads` with an additional write request to one of 
 <div id="chart_4"></div>
 
 ## Parting thoughts
-This was a good way to spend some time caching. You may already be familiar with Redis' [keyspace notifications](https://redis.io/topics/notifications), which are events about the keyspace—such as modifications to keys—sent on PubSub channels. Keyspace notifications can, in fact, be used in much the same manner as Redis sServer-assisted client-side caching, to achieve similar results.
+This was a good way to spend some time caching. You may already be familiar with Redis' [keyspace notifications](https://redis.io/topics/notifications), which are events about the keyspace—such as modifications to keys—sent on PubSub channels. Keyspace notifications can, in fact, be used in much the same manner as Redis server-assisted client-side caching, to achieve similar results.
 
-Because PubSub is not a reliable means of transmitting messages, using either keyspace notifications or RESP2-based RSACSC can result in lost invalidation notifications and stale content. With the advent of RESP3, however, RSACSC notifications will be delivered as long as the connection is connected. Any disconnects can then be easily dealt with by a local cache reset.
+Because PubSub is not a reliable means of transmitting messages, using either keyspace notifications or RESP2-based RSACSC can result in lost invalidation notifications and stale content. With the advent of RESP3, however, RSACSC notifications will be delivered as long as the connection is alive. Any disconnects can then be easily dealt with by a local cache reset.
 
 The move in RESP3 from PubSub broadcasting to connection-specific notifications also means that clients will get invalidation notifications only for slots that interest them. That means less resources spent on communication, and less is better.
 
@@ -175,7 +175,7 @@ Regardless of the RESP version used, client authors can use RSACSC for caching m
 Furthermore, instead of just caching key-value tuples, the client can cache requests and their replies (while keeping track of the keys involved). Doing so enables caching of substrings returned [`GETRANGE`](https://redis.io/commands/getrange), list elements obtained via [`LRANGE`](https://redis.io/commands/lrange), or virtually any other type of query.
 
 ## A note about Redis' CRC64 function
-I wrote above that _"Python is robust enough to have anything I could possibly need."_ The one thing I didn't want to implement in this exercise was a CRC function, and I took it for granted that Python would have the right one for me.
+The one thing I knew I  didn't want to implement in this exercise was a CRC function. I assumed that Python would already have the right one for me.
 
 To find which CRC Redis is using you could just look at its source code—the file [_src/crc64.c_](https://github.com/redis/antirez/blob/unstable/src/crc64.c) tells us right at the beginning that:
 
@@ -202,7 +202,7 @@ Redis   0xad93d23594c935a9
 crcmod 0x1AD93D23594C935A9
 ```
 
-Whats more, `crcmod` had adamantly refused to use Redis' polynomial pettily claiming:
+What's more, `crcmod` had adamantly refused to use Redis' polynomial pettily claiming:
 ```txt
 >>> crcmod.mkCrcFun(0xad93d23594c935a9)
 Traceback (most recent call last):
