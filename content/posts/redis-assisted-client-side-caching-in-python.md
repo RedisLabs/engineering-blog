@@ -1,6 +1,6 @@
 ---
 title: "Redis-Assisted Client-Side Caching in Python"
-date: 2020-01-07
+date: 2020-01-09
 authors:
   - author:
       name: "Itamar Haber"
@@ -33,7 +33,7 @@ I was leaning towards prototyping this in Python, and a short [informal poll](ht
 
 To make the connection, I chose [redis-py](https://github.com/andymccurdy/redis-py). It provides the `Redis` class that is a straight-forward zero-fuss client, and Python's nature makes extending it easy.
 
-The requirements from the cache component are basic, so I was perfectly happy adapting the [LRU cache example in Python's `OrederedDict` documentation](https://docs.python.org/3/library/collections.html#ordereddict-examples-and-recipes).
+The requirements from the cache component are basic, so I was perfectly happy adapting the [LRU cache example in Python's `OrderedDict` documentation](https://docs.python.org/3/library/collections.html#ordereddict-examples-and-recipes).
 
 ## Making a regular connection into a cached one
 For this experiment, I chose to implement caching for a single Redis command, namely [`GET`](https://redis.io/commands/get). The premise is to make the client use the _read through_ pattern: that is, to attempt a read from the local cache and defer to Redis in case of a miss. Subclassing the `Redis` client and overriding its `get()` method gives us the following:
@@ -71,7 +71,7 @@ That means the client needs to employ the same hashing function to track how the
     def slot(key):
         ''' Returns the slot for a key '''
         crc = crc64(key)
-        crc %= 16777216
+        crc &= 0xffffff
         return crc
 
     def add(self, key):
@@ -86,7 +86,7 @@ That means the client needs to employ the same hashing function to track how the
 ```
 
 # Handling invalidation
-How an invalidation message is sent to a tracked client depends on the [Redis Serialization Protocol (RESP)](https://redis.io/topics/protocol) that the client is using. Earlier versions of Redis use RESP2, but its successor [RESP3](https://github.com/antirez/RESP3/blob/master/spec.md) is already present in the Redis 6 and will deprecate the older protocol completely in Redis 7.
+How an invalidation message is sent to a tracked client depends on the [Redis Serialization Protocol (RESP)](https://redis.io/topics/protocol) that the client is using. Earlier versions of Redis use RESP2, but its successor [RESP3](https://github.com/antirez/RESP3/blob/master/spec.md) is already present in Redis 6 and will deprecate the older protocol completely in Redis 7.
 
 RESP3 packs in many new features, including the ability for the server to "push" additional information on an existing connection to a client, alongside the actual replies. This channel is employed for delivering invalidation notifications when using the server-assisted client-side caching ability.
 
@@ -143,7 +143,7 @@ Invalidation is just a matter of popping keys, one by one, from the respective s
 ## Some measurements
 This post isn't about benchmarking or Python's performance per se, but it’s important to understand the mechanism's impact. For that purpose, I've used the [benchmark.py](https://github.com/itamarhaber/rsacsc-py/blob/master/benchmark.py) script on a 2019 MacBook Pro with a Redis instance running locally using defaults (except that I turned off snapshotting).
 
-Before performing the tests, the benchmark script populates the database with 1.000 keys and sets up the cache manager with a capacity for 100. It then runs several timed tests to measure performance. Each test is repeated five times for both types of connections: regular and cached.
+Before performing the tests, the benchmark script populates the database with 1000 keys and sets up the cache manager with a capacity for 100. It then runs several timed tests to measure performance. Each test is repeated five times for both types of connections: regular and cached.
 
 The result of the first test actually demonstrates one of caching's _disadvantages_: cache misses. In this test, `single_read`, we read every key from the entire database just once, so every access to the local cache results in a miss:
 
@@ -159,7 +159,7 @@ The next test is named `eleven_reads` because it reads every key in the database
 
 <div id="chart_3"></div>
 
-The last test extends `eleven_reads` with an additional write request to one of the 10 constant keys, which triggers the invalidation of a part of the cache. Latency of cached runs increase slightly, both because of the extra write command but also due to the need to refetch the contents of the cache:
+The last test extends `eleven_reads` with an additional write request to one of the 10 constant keys, which triggers the invalidation of a part of the cache. Latency of cached runs increases slightly, both because of the extra write command but also due to the need to refetch the contents of the cache:
 
 <div id="chart_4"></div>
 
@@ -172,7 +172,7 @@ The move in RESP3 from PubSub broadcasting to connection-specific notifications 
 
 Regardless of the RESP version used, client authors can use RSACSC for caching much more than just the GETting of entire strings. The mechanism is agnostic of the actual data structure used for storing the key's value, so all core Redis types and any custom ones declared by modules can be used with it.
 
-Furthermore, instead of just caching key-value tuples, the client can cache requests and their replies (while keeping track of the keys involved). Doing so enables caching of substrings returned [`GETRANGE`](https://redis.io/commands/getrange), list elements obtained via [`LRANGE`](https://redis.io/commands/lrange), or virtually any other type of query.
+Furthermore, instead of just caching key-value tuples, the client can cache requests and their replies (while keeping track of the keys involved). Doing so enables caching of substrings returned by [`GETRANGE`](https://redis.io/commands/getrange), list elements obtained via [`LRANGE`](https://redis.io/commands/lrange), or virtually any other type of query.
 
 ## A note about Redis' CRC64 function
 The one thing I knew I  didn't want to implement in this exercise was a CRC function. I assumed that Python would already have the right one for me.
