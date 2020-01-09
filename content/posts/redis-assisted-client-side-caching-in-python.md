@@ -1,5 +1,5 @@
 ---
-title: "Redis-Assisted Client-Side Caching in Python"
+title: "Redis Server-Assisted Client-Side Caching in Python"
 date: 2020-01-09
 authors:
   - author:
