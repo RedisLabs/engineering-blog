@@ -1,5 +1,5 @@
 ---
-title: "Redis-Assisted Client-Side Caching in Python"
+title: "Redis Server-Assisted Client-Side Caching in Python"
 date: 2020-01-09
 authors:
   - author:
@@ -85,7 +85,7 @@ That means the client needs to employ the same hashing function to track how the
         self.slots[slot].discard(key)
 ```
 
-# Handling invalidation
+## Handling invalidation
 How an invalidation message is sent to a tracked client depends on the [Redis Serialization Protocol (RESP)](https://redis.io/topics/protocol) that the client is using. Earlier versions of Redis use RESP2, but its successor [RESP3](https://github.com/antirez/RESP3/blob/master/spec.md) is already present in Redis 6 and will deprecate the older protocol completely in Redis 7.
 
 RESP3 packs in many new features, including the ability for the server to "push" additional information on an existing connection to a client, alongside the actual replies. This channel is employed for delivering invalidation notifications when using the server-assisted client-side caching ability.
