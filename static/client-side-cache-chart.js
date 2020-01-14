@@ -90,6 +90,10 @@ function drawChart(n, t, c) {
     title: `Test ${n}: ${t} on ${c} keys`,
     vAxis: {
       title: 'Time (ms)',
+      viewWindowMode:'explicit',
+      viewWindow:{
+        min:0,
+      },
     },
     hAxis: {
       title: `Averages: Regular ${avg(rows,1)}ms, Cached ${avg(rows,2)}ms (excluding 1st run)`,
