@@ -89,7 +89,7 @@ function drawChart(n, t, c) {
     height: 400,
     title: `Test ${n}: ${t} on ${c} keys`,
     vAxis: {
-    title: 'Time (ms)',
+      title: 'Time (ms)',
       viewWindowMode:'explicit',
       viewWindow:{
         min:0,
