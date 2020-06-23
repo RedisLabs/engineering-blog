@@ -17,7 +17,7 @@ HUGO_ENABLEGITINFO = "true"
 command = "hugo --buildFuture -b $DEPLOY_PRIME_URL"
 
 [context.deploy-preview.environment]
-HUGO_VERSION = "0.59.1"
+HUGO_VERSION = "0.72.0"
 
 ################################################
 # Branch Deploy context: all deploys that are not from a pull/merge request or
