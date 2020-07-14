@@ -4,6 +4,15 @@
 {{ partial "head.html" . }}
 
 <body>
+  {{ if not .Site.IsServer }}
+    {{ with .Site.Params.googleTagManager }}
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ . }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    {{ end }}
+  {{ end }}
+
   {{ partial "nav.html" . }}
 
   <div class="container">
@@ -14,7 +23,6 @@
 
   {{ partial "footer.html" . }}
   {{ partial "bootstrap-js.html" . }}
-  {{ partial "google-analytics-async.html" . }}
   {{ partial "mastodon-js.html" . }}
   {{ partial "cookie-consent.html" . }}
 </body>
