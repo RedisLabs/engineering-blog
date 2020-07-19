@@ -27,6 +27,7 @@ pygmentsCodeFences = true
   customBlockquoteStyle = true
   # showPostSummary = false
   googleAnalytics = "UA-92003007-13"
+  googleTagManager = "GTM-N6FJFFK"
   # cookieConsent = true
   # includeBootstrapJs = false
   # faviconSafariPinnedTabColor = "#5bbad5"
