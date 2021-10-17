@@ -53,7 +53,7 @@ Beyond these improvements, the greatest benefit of this refactor has been a much
 Our earlier grammar made it easy to rely directly on the AST for the construction of operations, especially in superficially simple clauses like `CREATE`. This approach belies the complexity of circumstances that need to be considered, however. For example, given the query:
 ```console
 MATCH (p:Person {name: 'Jeffrey'})
-CREATE (p)-[:EMPLOYED_BY]->(c: Company {name: 'Redis Labs'})
+CREATE (p)-[:EMPLOYED_BY]->(c: Company {name: 'Redis'})
 RETURN *
 ```
 The `CREATE` operation does not exist in isolation—it relies on projections from previous operations and itself projects data that must be returned to the user.
