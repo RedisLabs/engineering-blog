@@ -1,6 +1,6 @@
-baseURL = "https://engineering.redislabs.com/"
+baseURL = "https://engineering.redis.com/"
 languageCode = "en-us"
-title = "Redis Labs Engineering Blog"
+title = "Redis Engineering Blog"
 theme = "minimal-bootstrap-hugo-theme"
 pygmentsCodeFences = true
 # pygmentsStyle = "friendly"
@@ -13,7 +13,7 @@ pygmentsCodeFences = true
 
 [params]
   logo="favicon-32x32.png"
-  description = "Redis Labs Engineering Blog"
+  description = "Redis Engineering Blog"
   # contentBackgroundColor = "#fff"
   contentTextColor = "#494C4D"
   contentLinkColor = "#6592B8"
