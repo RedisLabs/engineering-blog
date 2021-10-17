@@ -70,7 +70,7 @@ cleanup:
 
 Instead of keeping tabs after which pointers need to be freed whenever a condition is met, we simply jump, free whatever was allocated, and return. In my eyes this design is cleaner and less prone to error, but I can understand why others are against it.
 
-Recently, we (the [RedisGraph](https://oss.redislabs.com/redisgraph/) team) wanted to introduce error reporting to handle failures while evaluating expressions. For example, evaluating the static expression `toUpper(5)` would fail as the `toUpper` function expects its argument to be a string. If this assumption isn't met, `toUpper` should raise an exception:
+Recently, we (the [RedisGraph](https://oss.redis.com/redisgraph/) team) wanted to introduce error reporting to handle failures while evaluating expressions. For example, evaluating the static expression `toUpper(5)` would fail as the `toUpper` function expects its argument to be a string. If this assumption isn't met, `toUpper` should raise an exception:
 
 ```c
 SIValue toUpper(SIValue v) {
