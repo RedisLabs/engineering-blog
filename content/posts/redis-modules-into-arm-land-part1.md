@@ -8,7 +8,7 @@ authors:
 tags: ["redisedge", "arm"]
 ---
 
-Here at Redis Labs, our motivation to bring Redis modules into ARM land was RedisEdge.
+Here at Redis, our motivation to bring Redis modules into ARM land was RedisEdge.
 Redis, of course, has long been native in this land, in both glibc and alpine/musl variants.
 Redis modules have already been on the multi-platform scene, running on various Linux distributions and supporting macOS mainly for the sake of development experience. However, it was more enterprise/data-center-oriented until RedisEdge, which targets IoT devices.
 In this series of posts, I'll describe our vision of ARM platform support and the developer user experience, as well as the steps we took to get there.
