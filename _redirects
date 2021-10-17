@@ -1,2 +1,2 @@
 # Redirect default Netlify subdomain to primary domain
-https://redis-engineering.netlify.com/* https://engineering.redislabs.com/:splat 301!
+https://redis-engineering.netlify.com/* https://engineering.redis.com/:splat 301!
