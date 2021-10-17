@@ -1,2 +1,2 @@
 # engineering-blog
-Redis Labs Engineering Blog
+Redis Engineering Blog
