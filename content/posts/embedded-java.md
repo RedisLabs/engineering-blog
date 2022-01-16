@@ -71,8 +71,8 @@ public class RedisServerShardedClusterTest {
         jedisClusterNode.add(new HostAndPort("127.0.0.1", 7380));
         
         JedisCluster cluster = new JedisCluster(jedisClusterNode);            
-        cluster.set("abc", "1");
-        assertEquals("1", cluster.get("abc"));
+        cluster.set("mykey", "1");
+        assertEquals("1", cluster.get("mykey"));
     }
 
 
